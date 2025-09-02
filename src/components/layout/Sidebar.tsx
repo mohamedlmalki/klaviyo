@@ -59,13 +59,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       <div className="p-4 border-b border-sidebar-border">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-primary rounded-xl flex items-center justify-center shadow-colored">
                 <Mail className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h1 className="font-jakarta font-semibold text-sidebar-foreground">Newsletter</h1>
-                <p className="text-xs text-sidebar-accent-foreground">Manager</p>
+                <h1 className="font-inter font-bold text-sidebar-foreground tracking-tight">Newsletter</h1>
+                <p className="text-xs text-sidebar-accent-foreground font-medium">Manager</p>
               </div>
             </div>
           )}
