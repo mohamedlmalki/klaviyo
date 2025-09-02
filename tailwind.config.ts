@@ -85,20 +85,20 @@ export default {
 				mono: ['JetBrains Mono', 'SF Mono', 'Consolas', 'Liberation Mono', 'Menlo', 'monospace']
 			},
 			backgroundImage: {
-				'gradient-primary': 'var(--gradient-primary)',
-				'gradient-secondary': 'var(--gradient-secondary)',
-				'gradient-success': 'var(--gradient-success)',
-				'gradient-warning': 'var(--gradient-warning)',
-				'gradient-danger': 'var(--gradient-danger)'
+				'gradient-primary': 'linear-gradient(135deg, hsl(262 83% 58%), hsl(270 91% 77%))',
+				'gradient-secondary': 'linear-gradient(135deg, hsl(0 0% 98%), hsl(210 40% 96%))',
+				'gradient-success': 'linear-gradient(135deg, hsl(142 76% 36%), hsl(142 69% 58%))',
+				'gradient-warning': 'linear-gradient(135deg, hsl(43 96% 56%), hsl(48 100% 67%))',
+				'gradient-danger': 'linear-gradient(135deg, hsl(0 84% 60%), hsl(0 91% 71%))'
 			},
 			boxShadow: {
-				'xs': 'var(--shadow-xs)',
-				'sm': 'var(--shadow-sm)',
-				'md': 'var(--shadow-md)',
-				'lg': 'var(--shadow-lg)',
-				'xl': 'var(--shadow-xl)',
-				'2xl': 'var(--shadow-2xl)',
-				'colored': 'var(--shadow-colored)'
+				'sm': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+				DEFAULT: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+				'md': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+				'lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+				'xl': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -6px rgb(0 0 0 / 0.1)',
+				'2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
+				'colored': '0 10px 25px -5px hsl(262 83% 58% / 0.25)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

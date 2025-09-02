@@ -18,10 +18,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       
       <main className={cn(
         "flex-1 flex flex-col overflow-hidden transition-all duration-300",
-        "bg-gradient-soft"
+        "bg-background"
       )}>
         <div className="flex-1 p-6 overflow-auto">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-6xl mx-auto animate-fade-in">
             {children}
           </div>
         </div>

@@ -95,22 +95,22 @@ export const AddSubscriber: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center space-x-3">
-        <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
-          <UserPlus className="w-5 h-5 text-white" />
+      <div className="flex items-center space-x-3 animate-slide-up">
+        <div className="w-12 h-12 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-colored">
+          <UserPlus className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Add Subscriber</h1>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">Add Subscriber</h1>
           <p className="text-muted-foreground">Add a single subscriber to your newsletter</p>
         </div>
       </div>
 
       {/* Current Account Info */}
-      <Card className="border-l-4 border-l-primary bg-primary-light/10">
+      <Card className="border-l-4 border-l-success bg-success-light/50 hover-lift animate-fade-in">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium">Adding to: {currentAccount.name}</p>
+              <p className="font-semibold text-foreground">Adding to: {currentAccount.name}</p>
               <p className="text-sm text-muted-foreground">Sender: {currentAccount.senderName}</p>
             </div>
             <div className="status-dot connected" />
@@ -119,9 +119,9 @@ export const AddSubscriber: React.FC = () => {
       </Card>
 
       {/* Main Form */}
-      <Card>
+      <Card className="hover-lift animate-scale-in shadow-lg">
         <CardHeader>
-          <CardTitle>Subscriber Information</CardTitle>
+          <CardTitle className="text-xl font-semibold">Subscriber Information</CardTitle>
           <CardDescription>
             Enter the email address and optional tags for the new subscriber
           </CardDescription>
@@ -134,18 +134,18 @@ export const AddSubscriber: React.FC = () => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email Address *</FormLabel>
+                    <FormLabel className="text-sm font-medium">Email Address *</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input 
                           placeholder="subscriber@example.com" 
-                          className="pl-10"
+                          className="pl-10 h-12 bg-background border-border focus:border-primary focus:ring-2 focus:ring-primary/20"
                           {...field} 
                         />
                       </div>
                     </FormControl>
-                    <FormDescription>
+                    <FormDescription className="text-xs text-muted-foreground">
                       The email address of the subscriber
                     </FormDescription>
                     <FormMessage />
@@ -158,18 +158,18 @@ export const AddSubscriber: React.FC = () => {
                 name="tags"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tags (Optional)</FormLabel>
+                    <FormLabel className="text-sm font-medium">Tags (Optional)</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Tag className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input 
                           placeholder="newsletter, welcome, premium"
-                          className="pl-10"
+                          className="pl-10 h-12 bg-background border-border focus:border-primary focus:ring-2 focus:ring-primary/20"
                           {...field} 
                         />
                       </div>
                     </FormControl>
-                    <FormDescription>
+                    <FormDescription className="text-xs text-muted-foreground">
                       Comma-separated tags for organizing subscribers
                     </FormDescription>
                     <FormMessage />
@@ -177,18 +177,19 @@ export const AddSubscriber: React.FC = () => {
                 )}
               />
 
-              <div className="flex justify-end space-x-3">
+              <div className="flex justify-end space-x-3 pt-4">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => form.reset()}
+                  className="px-6"
                 >
                   Clear
                 </Button>
                 <Button 
                   type="submit"
                   disabled={form.formState.isSubmitting}
-                  className="bg-gradient-primary hover:opacity-90 transition-opacity"
+                  className="px-8 bg-gradient-primary hover:opacity-90 transition-all duration-300 hover:scale-105 shadow-colored"
                 >
                   {form.formState.isSubmitting ? (
                     <>
@@ -209,10 +210,10 @@ export const AddSubscriber: React.FC = () => {
       </Card>
 
       {/* Help Card */}
-      <Card className="bg-gradient-soft border-0 shadow-soft">
-        <CardContent className="p-4">
-          <h3 className="font-medium mb-2">💡 Tips</h3>
-          <ul className="text-sm text-muted-foreground space-y-1">
+      <Card className="bg-muted/30 border-0 shadow-sm hover-lift animate-fade-in">
+        <CardContent className="p-6">
+          <h3 className="font-semibold mb-3 text-foreground">💡 Tips</h3>
+          <ul className="text-sm text-muted-foreground space-y-2">
             <li>• Use tags to segment your audience and send targeted campaigns</li>
             <li>• Subscribers will receive a confirmation email if double opt-in is enabled</li>
             <li>• You can always edit subscriber information later from the Subscribers page</li>

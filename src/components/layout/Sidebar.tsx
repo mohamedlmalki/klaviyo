@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AccountSelector } from '@/components/account/AccountSelector';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { cn } from '@/lib/utils';
 
 interface SidebarProps {
@@ -97,11 +98,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                 <Button
                   variant={isActive ? "default" : "ghost"}
                   className={cn(
-                    "w-full justify-start text-left font-normal transition-all duration-200",
+                    "w-full justify-start text-left font-normal transition-all duration-300 animate-scale-in",
                     isCollapsed ? "p-2" : "p-3",
                     isActive 
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-soft" 
-                      : "hover:bg-sidebar-accent text-sidebar-foreground hover:text-sidebar-accent-foreground"
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg hover:shadow-xl" 
+                      : "hover:bg-sidebar-accent text-sidebar-foreground hover:text-sidebar-accent-foreground hover:-translate-y-0.5"
                   )}
                 >
                   <Icon className={cn("shrink-0", isCollapsed ? "h-4 w-4" : "h-4 w-4 mr-3")} />
@@ -119,13 +120,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       </nav>
 
       {/* Footer */}
-      {!isCollapsed && (
-        <div className="p-4 border-t border-sidebar-border">
-          <div className="text-xs text-sidebar-accent-foreground text-center">
-            Newsletter Manager v1.0
-          </div>
+      <div className="p-4 border-t border-sidebar-border">
+        <div className="flex items-center justify-between">
+          {!isCollapsed && (
+            <div className="text-xs text-sidebar-accent-foreground">
+              Newsletter Manager v1.0
+            </div>
+          )}
+          <ThemeToggle />
         </div>
-      )}
+      </div>
     </div>
   );
 };
