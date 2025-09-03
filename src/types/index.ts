@@ -2,7 +2,6 @@ export interface ApiAccount {
   id: string;
   name: string;
   apiKey: string;
-  senderName: string;
   status: 'connected' | 'disconnected' | 'checking';
   lastChecked?: Date;
   jobProgress?: {
@@ -15,7 +14,6 @@ export interface ApiAccount {
 export interface Subscriber {
   id: string;
   email: string;
-  tags: string[];
   subscriptionDate: Date;
   status: 'active' | 'unsubscribed' | 'bounced';
 }

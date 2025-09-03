@@ -1,61 +1,100 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { UserPlus, Mail, Tag } from 'lucide-react';
+import { UserPlus, Mail, List } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAccounts } from '@/contexts/AccountContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
+
+// Updated schema to include the listId
 const addSubscriberSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
-  tags: z.string(),
+  listId: z.string().min(1, { message: "Please select a list." }),
 });
 
 type AddSubscriberForm = z.infer<typeof addSubscriberSchema>;
+type KlaviyoList = { id: string; name: string; };
 
 export const AddSubscriber: React.FC = () => {
   const { currentAccount } = useAccounts();
-  const { toast } = useToast();
+  const [lists, setLists] = useState<KlaviyoList[]>([]);
+  const [isLoadingLists, setIsLoadingLists] = useState(false);
   
   const form = useForm<AddSubscriberForm>({
     resolver: zodResolver(addSubscriberSchema),
     defaultValues: {
       email: '',
-      tags: '',
+      listId: '',
     },
   });
 
+  // Effect to fetch lists when the current account changes
+  useEffect(() => {
+    const fetchLists = async () => {
+      if (currentAccount) {
+        setIsLoadingLists(true);
+        form.reset(); // Reset form when account changes
+        try {
+          const response = await fetch(`${apiUrl}/api/lists/${currentAccount.id}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch lists');
+          }
+          const data = await response.json();
+          setLists(data);
+        } catch (error) {
+          toast.error("Could not fetch lists", { description: "Please check the API key and permissions." });
+          setLists([]); // Clear lists on error
+        } finally {
+          setIsLoadingLists(false);
+        }
+      } else {
+        setLists([]);
+        form.reset();
+      }
+    };
+
+    fetchLists();
+  }, [currentAccount]); // FIX: Removed 'form' from the dependency array
+
   const onSubmit = async (data: AddSubscriberForm) => {
     if (!currentAccount) {
-      toast({
-        title: "No Account Selected",
-        description: "Please select an API account first",
-        variant: "destructive",
-      });
+      toast.error("No Account Selected", { description: "Please select an API account first" });
       return;
     }
 
+    const toastId = toast.loading("Adding subscriber...");
     try {
-      // Simulate API call - replace with actual Buttondown API integration
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Subscriber Added",
-        description: `Successfully added ${data.email} to your newsletter`,
+      const response = await fetch(`${apiUrl}/api/add-subscriber`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ...data, accountId: currentAccount.id }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message);
+      }
+
+      toast.success("Subscriber Added", {
+        id: toastId,
+        description: `Successfully added ${data.email} to the list.`,
       });
       
-      form.reset();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add subscriber. Please try again.",
-        variant: "destructive",
+      form.reset({ ...data, email: '' });
+
+    } catch (error: any) {
+      toast.error("Failed to add subscriber", {
+        id: toastId,
+        description: error.message,
       });
     }
   };
@@ -76,65 +115,64 @@ export const AddSubscriber: React.FC = () => {
     );
   }
 
-  if (currentAccount.status !== 'connected') {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6 text-center">
-            <Mail className="h-12 w-12 mx-auto mb-4 text-destructive" />
-            <h2 className="text-lg font-semibold mb-2">Account Not Connected</h2>
-            <p className="text-muted-foreground mb-4">
-              Your API account is not properly connected. Please check your API key.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center space-x-3 animate-slide-up">
         <div className="w-12 h-12 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-colored">
           <UserPlus className="w-6 h-6 text-white" />
         </div>
         <div>
           <h1 className="text-3xl font-bold text-foreground tracking-tight">Add Subscriber</h1>
-          <p className="text-muted-foreground">Add a single subscriber to your newsletter</p>
+          <p className="text-muted-foreground">Add a new profile to a specific list</p>
         </div>
       </div>
 
-      {/* Current Account Info */}
-      <Card className="border-l-4 border-l-success bg-success-light/50 hover-lift animate-fade-in">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-semibold text-foreground">Adding to: {currentAccount.name}</p>
-              <p className="text-sm text-muted-foreground">Sender: {currentAccount.senderName}</p>
-            </div>
-            <div className="status-dot connected" />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Main Form */}
       <Card className="hover-lift animate-scale-in shadow-lg">
         <CardHeader>
           <CardTitle className="text-xl font-semibold">Subscriber Information</CardTitle>
           <CardDescription>
-            Enter the email address and optional tags for the new subscriber
+            Select a list and enter the email address for the new subscriber.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+
+              <FormField
+                control={form.control}
+                name="listId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Klaviyo List *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingLists || lists.length === 0}>
+                      <FormControl>
+                        <div className="relative">
+                          <List className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <SelectTrigger className="pl-10 h-12 bg-background border-border focus:border-primary focus:ring-2 focus:ring-primary/20">
+                            <SelectValue placeholder={isLoadingLists ? "Loading lists..." : "Select a list"} />
+                          </SelectTrigger>
+                        </div>
+                      </FormControl>
+                      <SelectContent>
+                        {lists.map((list) => (
+                          <SelectItem key={list.id} value={list.id}>
+                            {list.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>The list to which the subscriber will be added.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">Email Address *</FormLabel>
+                    <FormLabel>Email Address *</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -145,52 +183,17 @@ export const AddSubscriber: React.FC = () => {
                         />
                       </div>
                     </FormControl>
-                    <FormDescription className="text-xs text-muted-foreground">
-                      The email address of the subscriber
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="tags"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium">Tags (Optional)</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Tag className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input 
-                          placeholder="newsletter, welcome, premium"
-                          className="pl-10 h-12 bg-background border-border focus:border-primary focus:ring-2 focus:ring-primary/20"
-                          {...field} 
-                        />
-                      </div>
-                    </FormControl>
-                    <FormDescription className="text-xs text-muted-foreground">
-                      Comma-separated tags for organizing subscribers
-                    </FormDescription>
+                    <FormDescription>The email address of the subscriber.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
               <div className="flex justify-end space-x-3 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => form.reset()}
-                  className="px-6"
-                >
-                  Clear
+                <Button type="button" variant="outline" onClick={() => form.reset()} className="px-6">
+                  Clear Form
                 </Button>
-                <Button 
-                  type="submit"
-                  disabled={form.formState.isSubmitting}
-                  className="px-8 bg-gradient-primary hover:opacity-90 transition-all duration-300 hover:scale-105 shadow-colored"
-                >
+                <Button type="submit" disabled={form.formState.isSubmitting} className="px-8 bg-gradient-primary hover:opacity-90 transition-all duration-300 hover:scale-105 shadow-colored">
                   {form.formState.isSubmitting ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
@@ -206,18 +209,6 @@ export const AddSubscriber: React.FC = () => {
               </div>
             </form>
           </Form>
-        </CardContent>
-      </Card>
-
-      {/* Help Card */}
-      <Card className="bg-muted/30 border-0 shadow-sm hover-lift animate-fade-in">
-        <CardContent className="p-6">
-          <h3 className="font-semibold mb-3 text-foreground">💡 Tips</h3>
-          <ul className="text-sm text-muted-foreground space-y-2">
-            <li>• Use tags to segment your audience and send targeted campaigns</li>
-            <li>• Subscribers will receive a confirmation email if double opt-in is enabled</li>
-            <li>• You can always edit subscriber information later from the Subscribers page</li>
-          </ul>
         </CardContent>
       </Card>
     </div>
