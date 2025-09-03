@@ -157,6 +157,7 @@ app.get('/api/lists/:accountId', async (req, res) => {
 // --- FINAL CORRECTED ENDPOINT: Add Subscriber to List ---
 app.post('/api/add-subscriber', async (req, res) => {
     const { email, listId, accountId } = req.body;
+    console.log(`[LOG] Received request to add subscriber: ${email} to list ${listId}`);
 
     if (!accountId || !listId || !email) {
         return res.status(400).json({ error: 'Email, List ID, and Account ID are required' });
@@ -166,51 +167,76 @@ app.post('/api/add-subscriber', async (req, res) => {
     const account = accounts.find(acc => acc.id === accountId);
 
     if (!account) {
+        console.log('[LOG] Account not found.');
         return res.status(404).json({ error: 'Account not found' });
     }
-
+    
     const headers = {
         'Authorization': `Klaviyo-API-Key ${account.apiKey}`,
-        'revision': '2023-02-22',
-        'Content-Type': 'application/json'
+        'accept': 'application/json',
+        'content-type': 'application/json',
+        'revision': '2024-07-15'
     };
 
-    try {
-        // Step 1: Create the profile. This will also update an existing profile.
-        const profileResponse = await axios.post(
-            'https://a.klaviyo.com/api/profiles',
-            {
-                data: {
-                    type: 'profile',
-                    attributes: {
-                        email: email
-                    }
+    const payload = {
+        "data": {
+            "type": "profile-subscription-bulk-create-job",
+            "attributes": {
+                "custom_source": "Newsletter App",
+                "profiles": {
+                    "data": [
+                        {
+                            "type": "profile",
+                            "attributes": {
+                                "email": email,
+                                "subscriptions": {
+                                    "email": {
+                                        "marketing": {
+                                            "consent": "SUBSCRIBED",
+                                            "consented_at": new Date().toISOString()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ]
                 }
             },
-            { headers }
-        );
-
-        const profileId = profileResponse.data.data.id;
-
-        // Step 2: Subscribe the new profile to the selected list, which gives consent.
-        await axios.post(
-            `https://a.klaviyo.com/api/lists/${listId}/relationships/profiles`,
-            {
-                data: [
-                    {
-                        type: 'profile',
-                        id: profileId
+            "relationships": {
+                "list": {
+                    "data": {
+                        "type": "list",
+                        "id": listId
                     }
-                ]
-            },
+                }
+            }
+        }
+    };
+
+    console.log('[LOG] Submitting job to Klaviyo with CORRECT payload:', JSON.stringify(payload, null, 2));
+
+    try {
+        const response = await axios.post(
+            'https://a.klaviyo.com/api/profile-subscription-bulk-create-jobs',
+            payload,
             { headers }
         );
 
-        res.json({ success: true, message: `Successfully added ${email} to the list.` });
+        if (response.status === 202) {
+            console.log('[LOG] Successfully submitted job to Klaviyo. The request was accepted and is being processed.');
+            res.json({ success: true, message: `Successfully submitted subscription for ${email}. Please allow a moment for it to appear in Klaviyo.` });
+        } else {
+            console.log(`[LOG] Received unexpected status from Klaviyo: ${response.status}`);
+            res.status(response.status).json({ success: false, message: 'Received an unexpected status from Klaviyo.' });
+        }
 
     } catch (error) {
         const statusCode = error.response?.status;
-        const errorMessage = error.response?.data?.errors?.[0]?.detail || "An error occurred with the Klaviyo API.";
+        const errorData = error.response?.data;
+        console.error("[LOG] Klaviyo API Error:", JSON.stringify(errorData, null, 2));
+        
+        const errorMessage = errorData?.errors?.[0]?.detail || "An error occurred with the Klaviyo API.";
+        
         res.status(statusCode || 500).json({
             success: false,
             message: errorMessage,
